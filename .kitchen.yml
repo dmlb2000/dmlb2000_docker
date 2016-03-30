@@ -11,11 +11,11 @@ provisioner:
 #   name: inspec
 
 platforms:
-  - name: ubuntu-14.04
-  - name: centos-7.1
+  - name: centos-7.2
 
 suites:
   - name: default
+    data_bags_path: "test/integration/data_bags"
     run_list:
       - recipe[dmlb2000_docker::default]
     attributes:
