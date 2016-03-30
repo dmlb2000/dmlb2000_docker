@@ -32,6 +32,20 @@ x509_certificate 'docker-client' do
   days 365
 end
 
+include_recipe 'lvm'
+node['dmlb2000_docker']['physical_volumes'].each do |dev|
+  lvm_physical_volume dev
+end
+lvm_volume_group 'docker' do
+  physical_volumes node['dmlb2000_docker']['physical_volumes']
+  logical_volume 'data' do
+    size '90%VG'
+  end
+  logical_volume 'metadata' do
+    size '10%VG'
+  end
+end
+
 docker_installation 'default' do
   action :create
 end
@@ -44,5 +58,8 @@ docker_service 'default' do
   tls_server_key node['dmlb2000_docker']['certs']['server']['key']
   tls_client_cert node['dmlb2000_docker']['certs']['client']['cert']
   tls_client_key node['dmlb2000_docker']['certs']['client']['key']
+  storage_driver 'devicemapper'
+  storage_opts %w(dm.datadev=/dev/docker/data dm.metadatadev=/dev/docker/metadata dm.fs=xfs)
+  group 'wheel'
   action [:create, :start]
 end
