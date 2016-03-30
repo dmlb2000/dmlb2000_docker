@@ -33,9 +33,6 @@ x509_certificate 'docker-client' do
 end
 
 include_recipe 'lvm'
-node['dmlb2000_docker']['physical_volumes'].each do |dev|
-  lvm_physical_volume dev
-end
 lvm_volume_group 'docker' do
   physical_volumes node['dmlb2000_docker']['physical_volumes']
   logical_volume 'data' do
