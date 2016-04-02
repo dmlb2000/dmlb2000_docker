@@ -15,7 +15,7 @@ x509_certificate 'docker' do
   certificate node['dmlb2000_docker']['certs']['ca']['cert']
   cacertificate node['dmlb2000_docker']['certs']['ca']['pem']
 end
-x509_certificate 'docker-server' do
+x509_certificate 'docker.dmlb2000.org' do
   ca 'docker'
   key node['dmlb2000_docker']['certs']['server']['key']
   certificate node['dmlb2000_docker']['certs']['server']['cert']
@@ -48,15 +48,25 @@ docker_installation 'default' do
 end
 
 docker_service 'default' do
-  host [ "tcp://#{node['ipaddress']}:2376", 'unix:///var/run/docker.sock' ]
-  tls_verify true
-  tls_ca_cert node['dmlb2000_docker']['certs']['ca']['pem']
-  tls_server_cert node['dmlb2000_docker']['certs']['server']['cert']
-  tls_server_key node['dmlb2000_docker']['certs']['server']['key']
-  tls_client_cert node['dmlb2000_docker']['certs']['client']['cert']
-  tls_client_key node['dmlb2000_docker']['certs']['client']['key']
+  host [ 'unix:///var/run/docker.sock' ]
   storage_driver 'devicemapper'
   storage_opts %w(dm.datadev=/dev/docker/data dm.metadatadev=/dev/docker/metadata dm.fs=xfs)
   group 'wheel'
   action [:create, :start]
 end
+
+include_recipe 'apache2'
+
+template "#{node['apache']['dir']}/sites-available/docker.conf" do
+  source 'web_app.conf.erb'
+  variables(
+    ssl_key: node['dmlb2000_docker']['certs']['server']['key'],
+    ssl_cert: node['dmlb2000_docker']['certs']['server']['cert'],
+    ssl_cacert: node['dmlb2000_docker']['certs']['ca']['pem'],
+    doc_root: '/var/www/docker',
+    vhost_name: 'docker.dmlb2000.org',
+    proxy_url: 'unix:/var/run/docker.sock|http://localhost/'
+  )
+end
+
+apache_site 'docker'

@@ -1,0 +1,17 @@
+<VirtualHost *:443>
+    DocumentRoot <%= @doc_root %>
+    ServerName <%= @vhost_name %>
+  
+    SSLEngine on
+    SSLCertificateFile <%= @ssl_cert %>
+    SSLCertificateKeyFile <%= @ssl_key %>
+    SSLCACertificateFile <%= @ssl_cacert %>
+    SSLVerifyClient require
+    SSLVerifyDepth 1
+
+    ProxyPass "/" "<%= @proxy_url %>"
+    ProxyPassReverse "/" "<%= @proxy_url %>"
+
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
+    CustomLog logs/ssl_access_log combined
+</VirtualHost>
