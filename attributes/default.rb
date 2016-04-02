@@ -1,9 +1,3 @@
-default['x509']['country'] = 'US'
-default['x509']['state'] = 'WA'
-default['x509']['city'] = 'Richland'
-default['x509']['organization'] = 'dmlb2000'
-default['x509']['department'] = 'dmlb2000'
-default['x509']['email'] = 'dmlb2000@gmail.com'
 default['apache']['listen'] = %w( *:80 *:443 )
 %w( ssl access_compat proxy proxy_http ).each do |my_mod|
   default['apache']['default_modules'] << my_mod
