@@ -6,6 +6,11 @@
 
 include_recipe 'x509'
 directory '/etc/pki/docker'
+
+x509_ca_certificate "dockerCA" do
+  cacertificate "/etc/pki/docker/ca.pem"
+end
+
 x509_certificate 'docker.dmlb2000.org' do
   ca 'dockerCA'
   key node['dmlb2000_docker']['certs']['ca']['key']
@@ -19,6 +24,7 @@ docker_installation 'default' do
 end
 
 docker_service 'default' do
+  
   group 'wheel'
   action [:create, :start]
 end
