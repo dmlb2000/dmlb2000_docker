@@ -1,6 +1,7 @@
 ---
 driver:
-  name: libvirt
+  name: vagrant
+  provider: libvirt
 
 provisioner:
   name: chef_zero
