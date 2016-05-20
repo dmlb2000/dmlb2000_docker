@@ -7,7 +7,7 @@
 include_recipe 'x509'
 directory '/etc/pki/docker'
 
-x509_ca_certificate "dockerCA" do
+x509_ca_certificate 'dockerCA' do
   cacertificate node['dmlb2000_docker']['certs']['ca']['pem']
 end
 
@@ -24,7 +24,7 @@ docker_installation 'default' do
 end
 
 docker_service 'default' do
-  host [ "tcp://#{node['ipaddress']}:2376", 'unix:///var/run/docker.sock' ]
+  host ["tcp://#{node['ipaddress']}:2376", 'unix:///var/run/docker.sock']
   tls_ca_cert node['dmlb2000_docker']['certs']['ca']['pem']
   tls_server_cert node['dmlb2000_docker']['certs']['server']['cert']
   tls_server_key node['dmlb2000_docker']['certs']['server']['key']
