@@ -1,8 +1,6 @@
 ---
 driver:
   name: vagrant
-  vagrantfiles:
-   - test/integration/Vagrantfile.rb
 
 provisioner:
   name: chef_zero
