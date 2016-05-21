@@ -56,10 +56,8 @@ end
 ruby_block 'gather-flannel-env' do
   block do
     node.run_state[:flannel] = { bip: '', mtu: '' }
-    flannel_id = `docker -H unix:///var/run/docker-system.sock ps -a|
-                  grep flannel | cut -d ' ' -f 1`.strip
-    env = `docker -H unix:///var/run/docker-system.sock exec
-           #{flannel_id} cat /run/flannel/subnet.env`
+    flannel_id = `docker -H unix:///var/run/docker-system.sock ps -a| grep flannel | cut -d ' ' -f 1`.strip
+    env = `docker -H unix:///var/run/docker-system.sock exec #{flannel_id} cat /run/flannel/subnet.env`
     raise 'Unable to gather flannel networking information!' if env.empty?
     env = env.split
     node.run_state[:flannel][:bip] = env[1].split('=')[1].strip
