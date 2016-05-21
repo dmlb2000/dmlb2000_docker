@@ -2,6 +2,8 @@
 driver:
   name: vagrant
   provider: libvirt
+  vagrantfiles:
+   - test/integration/Vagrantfile.rb
 
 provisioner:
   name: chef_zero
@@ -19,4 +21,9 @@ suites:
     data_bags_path: "test/integration/data_bags"
     run_list:
       - recipe[dmlb2000_docker::default]
+    attributes:
+  - name: server
+    data_bags_path: "test/integration/data_bags"
+    run_list:
+      - recipe[dmlb2000_docker::server]
     attributes:
