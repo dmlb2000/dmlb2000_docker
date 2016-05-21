@@ -21,8 +21,9 @@ end
 
 x509_certificate "dmlb2000-#{node['fqdn']}" do
   cn node['fqdn']
-  ca "dockerCA"
-  type "client"
+  owner 'dmlb2000'
+  ca 'dockerCA'
+  type 'client'
   key node['dmlb2000_docker']['certs']['client']['key']
   certificate node['dmlb2000_docker']['certs']['client']['cert']
 end
