@@ -19,6 +19,14 @@ x509_certificate 'docker.dmlb2000.org' do
   days 365
 end
 
+x509_certificate "dmlb2000-#{node['fqdn']}" do
+  cn node['fqdn']
+  ca "dockerCA"
+  type "client"
+  key node['dmlb2000_docker']['certs']['client']['key']
+  certificate node['dmlb2000_docker']['certs']['client']['cert']
+end
+
 docker_installation 'default' do
   action :create
 end
