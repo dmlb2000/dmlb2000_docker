@@ -27,3 +27,8 @@ suites:
     run_list:
       - recipe[dmlb2000_docker::server]
     attributes:
+  - name: kubmaster
+    data_bags_path: "test/integration/data_bags"
+    run_list:
+      - recipe[dmlb2000_docker::kubmaster]
+    attributes:

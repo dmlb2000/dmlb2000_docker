@@ -50,21 +50,7 @@ x509_certificate "dmlb2000-#{node['fqdn']}" do
   certificate node['dmlb2000_docker']['certs']['client']['cert']
 end
 
-docker_installation 'default' do
-  action :create
-end
-
-docker_service 'default' do
-  host ["tcp://#{node['ipaddress']}:2376", 'unix:///var/run/docker.sock']
-  tls_ca_cert node['dmlb2000_docker']['certs']['ca']['pem']
-  tls_server_cert node['dmlb2000_docker']['certs']['server']['cert']
-  tls_server_key node['dmlb2000_docker']['certs']['server']['key']
-  tls_verify node['dmlb2000_docker']['tls_verify']
-  storage_driver 'devicemapper'
-  storage_opts %w(dm.datadev=/dev/docker/default-data dm.metadatadev=/dev/docker/default-metadata)
-  group 'wheel'
-  action [:create, :start]
-end
+package 'docker'
 
 directory '/var/lib/docker-system'
 docker_service 'system' do
@@ -75,7 +61,10 @@ docker_service 'system' do
   tls_verify node['dmlb2000_docker']['tls_verify']
   storage_driver 'devicemapper'
   graph '/var/lib/docker-system'
-  storage_opts %w(dm.datadev=/dev/docker/system-data dm.metadatadev=/dev/docker/system-metadata)
+  storage_opts %w(
+    dm.datadev=/dev/docker/system-data
+    dm.metadatadev=/dev/docker/system-metadata
+  )
   group 'wheel'
   action [:create, :start]
 end
