@@ -17,7 +17,7 @@ docker_container 'etcd' do
   tag etcd_version
   restart_policy 'always'
   command '/usr/local/bin/etcd '\
-          '--addr=127.0.0.1:4001 '\
+          "--addr=#{node['ipaddress']}:4001 "\
           '--bind-addr=0.0.0.0:4001 '\
           '--data-dir=/var/etcd/data'
   action :run
@@ -105,7 +105,7 @@ docker_container 'kubelet' do
   )
   command '/hyperkube kubelet --api_servers=http://localhost:8080 '\
           '--v=2 --address=0.0.0.0 --enable_server '\
-          '--hostname_override=127.0.0.1 '\
+          "--hostname_override=#{node['ipaddress']} "\
           '--config=/etc/kubernetes/manifests-multi'
   restart_policy 'always'
   action :run
@@ -118,6 +118,6 @@ docker_container 'proxy' do
   tag "v#{k8s_version}"
   privileged true
   restart_policy 'always'
-  command '/hyperkube proxy --master=http://127.0.0.1:8080 --v=2'
+  command "/hyperkube proxy --master=http://#{node['ipaddress']}:8080 --v=2"
   action :run
 end
