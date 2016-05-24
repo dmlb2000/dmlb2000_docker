@@ -1,40 +1,14 @@
 include_recipe 'dmlb2000_docker::server'
 
-etcd_version = '2.2.1'
+master_ip = if Chef::Config[:solo]
+              '127.0.0.1'
+            else
+              search(:node, "chef_environment:#{chef_environment} AND "\
+              'recipe:dmlb2000_docker\:\:kubmaster')[0]['ipaddress']
+            end
+
 flannel_version = '0.5.5'
 k8s_version = '1.1.2'
-
-docker_image 'etcd' do
-  host 'unix:///var/run/docker-system.sock'
-  repo 'gcr.io/google_containers/etcd'
-  tag etcd_version
-end
-
-docker_container 'etcd' do
-  host 'unix:///var/run/docker-system.sock'
-  network_mode 'host'
-  repo 'gcr.io/google_containers/etcd'
-  tag etcd_version
-  restart_policy 'always'
-  command '/usr/local/bin/etcd '\
-          "--addr=#{node['ipaddress']}:4001 "\
-          '--bind-addr=0.0.0.0:4001 '\
-          '--data-dir=/var/etcd/data'
-  action :run
-end
-
-docker_container 'create-etcd-cidr-range' do
-  host 'unix:///var/run/docker-system.sock'
-  network_mode 'host'
-  repo 'gcr.io/google_containers/etcd'
-  tag etcd_version
-  command %q(
-              etcdctl set /coreos.com/network/config
-              '{ "Network": "10.1.0.0/16" }'
-            )
-  action :run
-  only_if { sleep 5 }
-end
 
 docker_image 'flannel' do
   host 'unix:///var/run/docker-system.sock'
@@ -50,6 +24,7 @@ docker_container 'flannel' do
   privileged true
   binds ['/dev/net:/dev/net']
   restart_policy 'always'
+  command "/opt/bin/flanneld --etcd-endpoints=http://#{master_ip}:4001"
   action :run
 end
 
@@ -105,7 +80,7 @@ docker_container 'kubelet' do
     /var/lib/docker/:/var/lib/docker:rw
     /var/lib/kubelet/:/var/lib/kubelet:rw
   )
-  command '/hyperkube kubelet --api_servers=http://localhost:8080 '\
+  command "/hyperkube kubelet --api_servers=http://#{master_ip}:8080 "\
           '--v=2 --address=0.0.0.0 --enable_server '\
           "--hostname_override=#{node['ipaddress']} "\
           '--config=/etc/kubernetes/manifests-multi'
@@ -120,6 +95,6 @@ docker_container 'proxy' do
   tag "v#{k8s_version}"
   privileged true
   restart_policy 'always'
-  command "/hyperkube proxy --master=http://#{node['ipaddress']}:8080 --v=2"
+  command "/hyperkube proxy --master=http://#{master_ip}:8080 --v=2"
   action :run
 end
