@@ -21,10 +21,10 @@ lvm_volume_group 'docker' do
     size        '45%VG'
   end
 
-  logical_volume 'system-metadata' do
+  logical_volume 'bootstrap-metadata' do
     size        '5%VG'
   end
-  logical_volume 'system-data' do
+  logical_volume 'bootstrap-data' do
     size        '45%VG'
   end
 end
@@ -52,18 +52,17 @@ end
 
 package 'docker'
 
-directory '/var/lib/docker-system'
-docker_service 'system' do
-  host ['unix:///var/run/docker-system.sock']
-  tls_ca_cert node['dmlb2000_docker']['certs']['ca']['pem']
-  tls_server_cert node['dmlb2000_docker']['certs']['server']['cert']
-  tls_server_key node['dmlb2000_docker']['certs']['server']['key']
-  tls_verify node['dmlb2000_docker']['tls_verify']
+directory '/var/lib/docker-bootstrap'
+docker_service 'bootstrap' do
+  host ['unix:///var/run/docker-bootstrap.sock']
+  iptables false
+  ip_masq false
+  bridge 'none'
   storage_driver 'devicemapper'
-  graph '/var/lib/docker-system'
+  graph '/var/lib/docker-bootstrap'
   storage_opts %w(
-    dm.datadev=/dev/docker/system-data
-    dm.metadatadev=/dev/docker/system-metadata
+    dm.datadev=/dev/docker/bootstrap-data
+    dm.metadatadev=/dev/docker/bootstrap-metadata
   )
   group 'wheel'
   action [:create, :start]

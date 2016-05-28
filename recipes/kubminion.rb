@@ -3,28 +3,27 @@ include_recipe 'dmlb2000_docker::server'
 master_ip = if Chef::Config[:solo]
               '127.0.0.1'
             else
-              search(:node, "chef_environment:#{chef_environment} AND "\
+              search(:node, "chef_environment:#{node.environment} AND "\
               'recipe:dmlb2000_docker\:\:kubmaster')[0]['ipaddress']
             end
 
-flannel_version = '0.5.5'
-k8s_version = '1.1.2'
-
 docker_image 'flannel' do
-  host 'unix:///var/run/docker-system.sock'
+  host 'unix:///var/run/docker-bootstrap.sock'
   repo 'quay.io/coreos/flannel'
-  tag flannel_version
+  tag node['dmlb2000_docker']['flannel_version']
 end
 
 docker_container 'flannel' do
-  host 'unix:///var/run/docker-system.sock'
+  host 'unix:///var/run/docker-bootstrap.sock'
   network_mode 'host'
   repo 'quay.io/coreos/flannel'
-  tag flannel_version
+  tag node['dmlb2000_docker']['flannel_version']
   privileged true
   binds ['/dev/net:/dev/net']
   restart_policy 'always'
-  command "/opt/bin/flanneld --etcd-endpoints=http://#{master_ip}:4001"
+  command "/opt/bin/flanneld --etcd-endpoints=http://#{master_ip}:4001 "\
+          '--ip-masq=true '\
+          "--iface=#{node['dmlb2000_docker']['flannel_iface']}"
   action :run
 end
 
@@ -32,8 +31,8 @@ ruby_block 'gather-flannel-env' do
   block do
     node.run_state[:flannel] = { bip: '', mtu: '' }
     # rubocop:disable Metrics/LineLength
-    flannel_id = `docker -H unix:///var/run/docker-system.sock ps -a| grep flannel | cut -d ' ' -f 1`.strip
-    env = `docker -H unix:///var/run/docker-system.sock exec #{flannel_id} cat /run/flannel/subnet.env`
+    flannel_id = `docker -H unix:///var/run/docker-bootstrap.sock ps -a| grep flannel | cut -d ' ' -f 1`.strip
+    env = `docker -H unix:///var/run/docker-bootstrap.sock exec #{flannel_id} cat /run/flannel/subnet.env`
     # rubocop:enable Metrics/LineLength
     raise 'Unable to gather flannel networking information!' if env.empty?
     env = env.split
@@ -61,37 +60,35 @@ docker_service 'default' do
 end
 
 docker_image 'hyperkube' do
-  host 'unix:///var/run/docker-system.sock'
-  repo 'gcr.io/google_containers/hyperkube'
-  tag "v#{k8s_version}"
+  repo 'gcr.io/google_containers/hyperkube-amd64'
+  tag "v#{node['dmlb2000_docker']['k8s_version']}"
 end
 
 docker_container 'kubelet' do
-  host 'unix:///var/run/docker-system.sock'
   network_mode 'host'
   pid_mode 'host'
   privileged true
-  repo 'gcr.io/google_containers/hyperkube'
-  tag "v#{k8s_version}"
+  repo 'gcr.io/google_containers/hyperkube-amd64'
+  tag "v#{node['dmlb2000_docker']['k8s_version']}"
   binds %w(
-    /var/run/docker.sock:/var/run/docker.sock
+    /var/run:/var/run:rw
     /sys:/sys:ro
     /:/rootfs:ro
     /var/lib/docker/:/var/lib/docker:rw
     /var/lib/kubelet/:/var/lib/kubelet:rw
   )
-  command "/hyperkube kubelet --api_servers=http://#{master_ip}:8080 "\
+  command '/hyperkube kubelet --allow-privileged=true '\
+          "--api_servers=http://#{master_ip}:8080 "\
           '--v=2 --address=0.0.0.0 --enable_server '\
-          "--hostname_override=#{node['ipaddress']} "\
-          '--config=/etc/kubernetes/manifests-multi'
+          '--containerized --cluster-dns=10.0.0.10 '\
+          '--cluster-domain=cluster.local'
   restart_policy 'always'
   action :run
 end
 
 docker_container 'proxy' do
-  host 'unix:///var/run/docker-system.sock'
   network_mode 'host'
-  repo 'gcr.io/google_containers/hyperkube'
+  repo 'gcr.io/google_containers/hyperkube-amd64'
   tag "v#{k8s_version}"
   privileged true
   restart_policy 'always'
