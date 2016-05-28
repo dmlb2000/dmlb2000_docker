@@ -5,6 +5,8 @@
 # Copyright (c) 2016 The Authors, All Rights Reserved.
 
 include_recipe 'x509'
+include_recipe 'dmlb2000_chef'
+include_recipe 'dmlb2000_distro'
 include_recipe 'dmlb2000_users'
 directory '/etc/pki/docker'
 

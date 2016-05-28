@@ -6,6 +6,8 @@
 
 include_recipe 'x509'
 include_recipe 'lvm'
+include_recipe 'dmlb2000_distro'
+include_recipe 'dmlb2000_chef'
 include_recipe 'dmlb2000_users'
 directory '/etc/pki/docker'
 
