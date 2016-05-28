@@ -73,10 +73,6 @@ docker_service 'default' do
   host ["tcp://#{node['ipaddress']}:2376", 'unix:///var/run/docker.sock']
   bip lazy { node.run_state[:flannel][:bip] }
   mtu lazy { node.run_state[:flannel][:mtu] }
-  tls_ca_cert node['dmlb2000_docker']['certs']['ca']['pem']
-  tls_server_cert node['dmlb2000_docker']['certs']['server']['cert']
-  tls_server_key node['dmlb2000_docker']['certs']['server']['key']
-  tls_verify node['dmlb2000_docker']['tls_verify']
   storage_driver 'devicemapper'
   storage_opts %w(dm.datadev=/dev/docker/default-data
                   dm.metadatadev=/dev/docker/default-metadata)
