@@ -37,10 +37,6 @@ end
 
 docker_service 'default' do
   host ["tcp://#{node['ipaddress']}:2376", 'unix:///var/run/docker.sock']
-  tls_ca_cert node['dmlb2000_docker']['certs']['ca']['pem']
-  tls_server_cert node['dmlb2000_docker']['certs']['server']['cert']
-  tls_server_key node['dmlb2000_docker']['certs']['server']['key']
-  tls_verify node['dmlb2000_docker']['tls_verify']
   group 'wheel'
   action [:create, :start]
 end
