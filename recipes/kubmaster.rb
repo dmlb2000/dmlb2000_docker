@@ -13,7 +13,8 @@ docker_container 'etcd' do
   tag node['dmlb2000_docker']['etcd_version']
   restart_policy 'always'
   command '/usr/local/bin/etcd '\
-          "--listen-client-urls=http://127.0.0.1:4001,http://#{node['ipaddress']}:4001 "\
+          '--listen-client-urls=http://127.0.0.1:4001,'\
+          "http://#{node['ipaddress']}:4001 "\
           "--advertise-client-urls=http://#{node['ipaddress']}:4001 "\
           '--data-dir=/var/etcd/data'
   action :run
@@ -101,16 +102,17 @@ docker_container 'kubelet' do
   command '/hyperkube kubelet --api_servers=http://localhost:8080 '\
           '--allow-privileged=true --containerized ' \
           '--v=2 --address=0.0.0.0 --enable_server '\
-          "--hostname_override=127.0.0.1 "\
+          '--hostname_override=127.0.0.1 '\
           '--config=/etc/kubernetes/manifests-multi ' \
           '--cluster-dns=10.0.0.10 --cluster-domain=cluster.local'
   restart_policy 'always'
   action :run
 end
 
-
 remote_file '/usr/local/sbin/kubectl' do
-  source "http://storage.googleapis.com/kubernetes-release/release/v#{node['dmlb2000_docker']['k8s_version']}/bin/linux/amd64/kubectl"
+  source 'http://storage.googleapis.com/kubernetes-release/'\
+         "release/v#{node['dmlb2000_docker']['k8s_version']}"\
+         '/bin/linux/amd64/kubectl'
   owner 'root'
   group 'root'
   mode '0755'
