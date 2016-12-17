@@ -4,7 +4,7 @@ maintainer_email 'dmlb2000@gmail.com'
 license 'all_rights'
 description 'Installs/Configures dmlb2000_docker'
 long_description 'Installs/Configures dmlb2000_docker'
-version '0.8.1'
+version '0.8.2'
 
 depends 'lvm'
 depends 'docker'
