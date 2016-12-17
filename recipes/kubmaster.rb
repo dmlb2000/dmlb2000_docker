@@ -36,14 +36,14 @@ end
 docker_image 'flannel' do
   host 'unix:///var/run/docker-bootstrap.sock'
   repo 'quay.io/coreos/flannel'
-  tag node['dmlb2000_docker']['flannel_version']
+  tag "v#{node['dmlb2000_docker']['flannel_version']}"
 end
 
 docker_container 'flannel' do
   host 'unix:///var/run/docker-bootstrap.sock'
   network_mode 'host'
   repo 'quay.io/coreos/flannel'
-  tag node['dmlb2000_docker']['flannel_version']
+  tag "v#{node['dmlb2000_docker']['flannel_version']}"
   privileged true
   binds ['/dev/net:/dev/net']
   command '/opt/bin/flanneld '\
