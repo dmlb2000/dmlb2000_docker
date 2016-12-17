@@ -10,7 +10,7 @@ default['dmlb2000_docker']['certs']['server']\
        ['cert'] = '/etc/pki/docker/docker-server.cert'
 default['dmlb2000_docker']['tls_verify'] = nil
 
-default['dmlb2000_docker']['k8s_version'] = '1.2.4'
-default['dmlb2000_docker']['etcd_version'] = '2.2.1'
+default['dmlb2000_docker']['k8s_version'] = '1.3.0'
+default['dmlb2000_docker']['etcd_version'] = '2.2.5'
 default['dmlb2000_docker']['flannel_version'] = '0.5.5'
-default['dmlb2000_docker']['flannel_iface'] = 'eth0'
+default['dmlb2000_docker']['flannel_iface'] = 'eth1'
